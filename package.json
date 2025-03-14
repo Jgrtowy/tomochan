@@ -1,0 +1,19 @@
+{
+	"name": "tomochan",
+	"module": "src/index.ts",
+	"type": "module",
+	"scripts": {
+		"dev": "NODE_ENV=development bun --watch .",
+		"start": "NODE_ENV=production bun ."
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"cron": "^4.1.0",
+		"discord.js": "^14.18.0"
+	}
+}
