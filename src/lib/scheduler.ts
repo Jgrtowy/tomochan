@@ -1,15 +1,31 @@
-import { CronJob } from "cron";
+import { CronJob, validateCronExpression } from "cron";
+import { sql } from "drizzle-orm";
 import { db, guilds } from "..";
+import { names } from "../db/schema";
 import secrets from "../secrets";
 import { checkFor } from "./checkFor";
+
+let cronJob: CronJob;
 export function scheduleJob() {
-	new CronJob("0 0 0 * * *", () => changeNickname());
+	const job = "0 0 * * * *";
+	console.log(
+		`${validateCronExpression(job) ? "║ ✅ Valid" : "║ ❌ Invalid"} cron expression: ${job}`,
+	);
+	cronJob = new CronJob(
+		job,
+		() => {
+			changeNickname();
+		},
+		null,
+		true,
+		"Europe/Warsaw",
+	);
 }
 
 export async function changeNickname() {
-	const name = db
-		.query("SELECT name FROM names ORDER BY RANDOM() LIMIT 1")
-		.get() as { name: string };
+	const name = (
+		await db.select().from(names).orderBy(sql`RANDOM()`).limit(1)
+	)[0];
 
 	if (!name) return;
 

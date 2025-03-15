@@ -2,7 +2,9 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
+import { max } from "drizzle-orm";
 import { db } from "../..";
+import { names } from "../../db/schema";
 import { CommandScope, type SlashCommandObject } from "../types";
 
 export default {
@@ -12,7 +14,7 @@ export default {
 		.addStringOption((option) =>
 			option
 				.setName("name")
-				.setDescription("Tomo`<input>`sky")
+				.setDescription("Tomo`<input>`wsky")
 				.setRequired(true),
 		),
 
@@ -25,19 +27,18 @@ export default {
 		if (!name) return;
 		name = name
 			.replace(/tomo/gi, "")
-			.replace(/sky/gi, "")
-			.replace(/ski/gi, "")
+			.replace(/wsky/gi, "")
+			.replace(/wski/gi, "")
 			.trim();
 		if (name) {
 			name = name.charAt(0).toUpperCase() + name.slice(1);
 		}
-		const fullName = `Tomo${name}sky`;
+		const fullName = `Tomo${name}wsky`;
 
-		db.run("INSERT INTO names (name, addedBy, addedAt) VALUES (?, ?, ?)", [
-			fullName,
-			interaction.user.id,
-			Math.floor(new Date().getTime() / 1000),
-		]);
+		await db.insert(names).values({
+			name: fullName,
+			addedBy: interaction.user.id,
+		});
 
 		interaction.reply({
 			content: `> ✅ Added __**${fullName}**__ to the list.`,

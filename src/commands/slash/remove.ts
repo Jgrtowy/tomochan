@@ -2,8 +2,10 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
+import { eq, sql } from "drizzle-orm";
 import { ownerCommand } from "..";
 import { db } from "../..";
+import { names } from "../../db/schema";
 import secrets from "../../secrets";
 import { CommandScope, type SlashCommandObject } from "../types";
 
@@ -28,30 +30,17 @@ export default {
 
 		if (!ownerCommand(interaction)) return;
 
-		const fullNameRow = db
-			.query("SELECT name FROM names WHERE id = $id")
-			.all({ $id: id })[0] as { name: string };
-		const fullName = fullNameRow.name ? fullNameRow.name : "Unknown user";
+		const fullNameRow = (
+			await db
+				.select()
+				.from(names)
+				.where(eq(names.rowNumber, Number(id)))
+		)[0];
 
-		db.run("DELETE FROM names WHERE id = ?", [id]);
-
-		db.exec("BEGIN TRANSACTION");
-
-		try {
-			db.run("UPDATE names SET id = id - 1 WHERE id > ?", [id]);
-
-			db.run(
-				`UPDATE sqlite_sequence SET seq = (SELECT COALESCE(MAX(id), 0) FROM names) WHERE name = 'names'`,
-			);
-
-			db.exec("COMMIT");
-		} catch (error) {
-			db.exec("ROLLBACK");
-			console.error("Error reordering IDs:", error);
-		}
+		await db.delete(names).where(eq(names.rowNumber, Number(id)));
 
 		interaction.reply({
-			content: `> 🗑️ Removed __**${fullName}**__ from the list.`,
+			content: `> 🗑️ Removed __**${fullNameRow.name}**__ from the list.`,
 		});
 	},
 } as SlashCommandObject;

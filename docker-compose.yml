@@ -9,5 +9,27 @@ services:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       TOMO_ID: ${TOMO_ID}
       OWNER_ID: ${OWNER_ID}
+      DATABASE_URL: ${DATABASE_URL}
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
     volumes:
-      - ./db/:/usr/src/app/db/
+      - pgdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+
+volumes:
+  pgdata:
+  
+networks:
+  default:
+    driver: bridge

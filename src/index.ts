@@ -8,7 +8,9 @@ import {
 	IntentsBitField,
 	Partials,
 } from "discord.js";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { autocomplete, executeCommand, registerCommands } from "./commands";
+import { names } from "./db/schema";
 import { checkFor } from "./lib/checkFor";
 import { changeNickname, scheduleJob } from "./lib/scheduler";
 import secrets from "./secrets";
@@ -19,17 +21,17 @@ console.log(`╔═════════════════════�
 ║ 🤖 TomoChan's starting! ${start.toLocaleString()}
 ${secrets.environment === "production" ? "║ 🌐 Production" : "║ 🛠️  Development"}
 ╠════════════════════════════════════════════════════`);
+export let db: NodePgDatabase;
 
-export const db = new Database("./db/db.sqlite", { readwrite: true });
 try {
-	db.query("SELECT * FROM names");
-	console.log("║ ✅ Database correct.");
-} catch (err) {
-	console.error("║ 🆕 Creating db...");
-	db.query(
-		"CREATE TABLE names (id TEXT PRIMARY KEY, name TEXT, addedBy TEXT, addedAt INTEGER)",
+	db = drizzle(
+		secrets.environment !== "production"
+			? secrets.devDatabaseUrl
+			: secrets.databaseUrl,
 	);
-	console.log("║ ✅ Table created.");
+} catch (e) {
+	console.error("║ ❌  Database error:", e);
+	process.exit(1);
 }
 
 export const client = new Client({
@@ -88,7 +90,6 @@ client.once(Events.ClientReady, async (client) => {
 
 	console.log("║ 📡 Registering commands...");
 	registerCommands(client.user);
-	changeNickname();
 	scheduleJob();
 
 	client.on(Events.InteractionCreate, async (interaction) => {

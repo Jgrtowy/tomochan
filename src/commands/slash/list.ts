@@ -3,7 +3,9 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from "discord.js";
+import { asc, count } from "drizzle-orm";
 import { db } from "../..";
+import { names } from "../../db/schema";
 import {
 	CommandScope,
 	type NamesSchema,
@@ -27,14 +29,17 @@ export default {
 
 		if (!page) return;
 
-		const names = db
-			.query("SELECT * FROM names ORDER BY id ASC LIMIT 10 OFFSET $offset")
-			.all({ $offset: (page - 1) * 10 }) as NamesSchema[];
-		const total = db.query("SELECT COUNT(*) as total FROM names").all() as {
-			total: number;
-		}[];
-		const totalPages = Math.ceil(total[0].total / 10);
-		if (!names.length) {
+		const query = await db
+			.select()
+			.from(names)
+			.orderBy(asc(names.rowNumber))
+			.limit(10)
+			.offset((page - 1) * 10);
+
+		const total = await db.select({ count: count() }).from(names);
+
+		const totalPages = Math.ceil(total[0].count / 10);
+		if (!query.length) {
 			interaction.reply({
 				content: "> 📜 No names found.",
 			});
@@ -44,17 +49,15 @@ export default {
 		const embed = new EmbedBuilder()
 			.setTitle("Tomo Names")
 			.setDescription(
-				names
+				query
 					.map(
 						(name) =>
-							`> ${name.id}. ${name.name} ⟶ <@${name.addedBy}>\\@<t:${name.addedAt}:f>`,
+							`> ${name.rowNumber}. ${name.name} ⟶ <@${name.addedBy}>\\@<t:${name.addedAt}:f>`,
 					)
 					.join("\n"),
 			)
 			.setFooter({ text: `Page ${page} of ${totalPages}` });
 
-		interaction.reply({
-			embeds: [embed],
-		});
+		interaction.reply({ embeds: [embed] });
 	},
 } as SlashCommandObject;
