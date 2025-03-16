@@ -28,6 +28,8 @@ COPY --from=prerelease /usr/src/app/src/ .
 COPY --from=prerelease /usr/src/app/package.json .
 
 RUN chmod -R 777 /usr/src/app
+ENV NODE_ENV=production
+
 # run the app
 USER bun
 ENTRYPOINT [ "bun", "run", "index.ts" ]
