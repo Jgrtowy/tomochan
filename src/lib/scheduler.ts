@@ -1,18 +1,18 @@
 import { CronJob, validateCronExpression } from "cron";
-import { sql } from "drizzle-orm";
-import { db, guilds } from "..";
-import { names } from "../db/schema";
-import secrets from "../secrets";
-import { checkFor } from "./checkFor";
+import { ActivityType, type Client } from "discord.js";
+import { count, sql } from "drizzle-orm";
+import { namesSchema } from "~/db/schema";
+import { client, db, guilds } from "~/index";
+import { guildsList } from "~/lib/allowed";
+import secrets from "~/secrets";
 
-let cronJob: CronJob;
 export function scheduleJob() {
-	const job = "0 0 * * * *";
+	const interval = "0 0 * * * *";
 	console.log(
-		`${validateCronExpression(job) ? "║ ✅ Valid" : "║ ❌ Invalid"} cron expression: ${job}`,
+		`${validateCronExpression(interval) ? "║ ✅ Valid" : "║ ❌ Invalid"} cron expression: ${interval}`,
 	);
-	cronJob = new CronJob(
-		job,
+	new CronJob(
+		interval,
 		() => {
 			changeNickname();
 		},
@@ -20,35 +20,59 @@ export function scheduleJob() {
 		true,
 		"Europe/Warsaw",
 	);
+	new CronJob(
+		interval,
+		() => {
+			setPresence(client);
+		},
+		null,
+		true,
+	);
+	console.log("║ ⏳ Registered jobs.");
 }
 
-export async function changeNickname() {
+export async function changeNickname(): Promise<undefined | string> {
 	const name = (
-		await db.select().from(names).orderBy(sql`RANDOM()`).limit(1)
+		await db.select().from(namesSchema).orderBy(sql`RANDOM()`).limit(1)
 	)[0];
 
 	if (!name) return;
 
 	console.log(
-		secrets.environment === "production"
-			? `║ 🔄 Changing nickname to ${name.name}`
-			: `║ 🔄 (not) Changing nickname to ${name.name}`,
+		`║ 🔄 Changing nickname to ${name.name} @ ${new Date().toLocaleString()}`,
 	);
 
-	for (const guild of guilds) {
-		const foundIn = await checkFor(guild, "tomo");
+	for (const guild of guildsList) {
+		const foundIn = guilds.find((g) => g.id === guild.guildId);
 		if (!foundIn) {
-			console.error(`║ ❌ Tomo not found in ${guild.name}.`);
 			continue;
 		}
-		const member = await guild.members.fetch(secrets.tomoId);
+		const member = await foundIn.members
+			.fetch(secrets.tomoId)
+			.catch(() => null);
 		if (!member) continue;
 		if (!member.manageable) {
-			console.error(`║ ❌ Insufficient permissions in ${guild.name}.`);
+			console.error(`║ ❌ Insufficient permissions in ${foundIn.name}.`);
 			continue;
 		}
-		if (secrets.environment === "production") {
-			await member.setNickname(name.name);
-		}
+		await member.setNickname(name.name);
 	}
+	return name.name;
+}
+
+export async function setPresence(client: Client) {
+	if (!client.user) return;
+	const total = await db.select({ count: count() }).from(namesSchema);
+	client.user.setPresence({
+		activities: [
+			{
+				type: ActivityType.Custom,
+				name:
+					secrets.environment !== "production"
+						? "dev mode"
+						: `Comes with ${total} Tomo's!`,
+			},
+		],
+		status: secrets.environment !== "production" ? "dnd" : "online",
+	});
 }

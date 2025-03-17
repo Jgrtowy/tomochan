@@ -7,9 +7,9 @@ import {
 	Routes,
 	SlashCommandBuilder,
 } from "discord.js";
-import { ownerCommand } from "..";
-import secrets from "../../secrets";
-import { CommandScope, type SlashCommandObject } from "../types";
+import { CommandScope, type SlashCommandObject } from "~/commands/types";
+import { ownerCommand } from "~/lib/allowed";
+import secrets from "~/secrets";
 
 const rest = new REST({ version: "10" }).setToken(secrets.discordToken);
 

@@ -2,10 +2,9 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
-import { ownerCommand } from "..";
-import { db } from "../..";
-import { changeNickname } from "../../lib/scheduler";
-import { CommandScope, type SlashCommandObject } from "../types";
+import { CommandScope, type SlashCommandObject } from "~/commands/types";
+import { ownerCommand } from "~/lib/allowed";
+import { changeNickname } from "~/lib/scheduler";
 
 export default {
 	builder: new SlashCommandBuilder()
@@ -17,10 +16,10 @@ export default {
 	run: async (interaction) => {
 		if (!ownerCommand(interaction)) return;
 
-		changeNickname();
+		const name = await changeNickname();
 
 		interaction.reply({
-			content: "> 🔁 Rerolled today name.",
+			content: `> 🔁 Rerolled name to ${name}.`,
 		});
 	},
 } as SlashCommandObject;

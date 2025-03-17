@@ -1,5 +1,6 @@
 import {
 	type AutocompleteInteraction,
+	type CacheType,
 	type ChatInputCommandInteraction,
 	type ClientUser,
 	type ContextMenuCommandInteraction,
@@ -9,10 +10,10 @@ import {
 	Routes,
 	User,
 } from "discord.js";
-import { guilds } from "..";
-import { checkFor } from "../lib/checkFor";
-import secrets from "../secrets";
-import commandObjects from "./list";
+import commandObjects from "~/commands/list";
+import { guilds } from "~/index";
+import { guildsList } from "~/lib/allowed";
+import secrets from "~/secrets";
 import {
 	CommandScope,
 	type ContextMenuCommandObject,
@@ -67,12 +68,8 @@ export async function executeCommand(
 	const command = commands.get(interaction.commandName);
 	if (!command) return;
 	if (!interaction.guild) return;
-	if (!(await checkFor(interaction.guild, "owner"))) {
-		await interaction.reply({
-			content: "❌ Owner of the bot must be in the server to use this command.",
-		});
-		return;
-	}
+	if (!checkGuild(interaction)) return;
+
 	try {
 		await command.run(
 			<ChatInputCommandInteraction & ContextMenuCommandInteraction>interaction,
@@ -98,12 +95,15 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
 	}
 }
 
-export function ownerCommand(interaction: ChatInputCommandInteraction) {
-	if (interaction.user.id !== secrets.ownerId) {
-		interaction.reply({
-			content: "❌ You are not the owner of the bot.",
-		});
-		return false;
+function checkGuild(
+	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
+) {
+	for (const guild of guildsList) {
+		if (guild.guildId === interaction.guildId) return true;
 	}
-	return true;
+	interaction.reply({
+		content: "> ❌ This guild isn't allowed to run commands.",
+	});
+
+	return false;
 }

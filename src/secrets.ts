@@ -5,22 +5,38 @@ interface Secrets {
 	ownerId: string;
 	databaseUrl: string;
 	devDatabaseUrl: string;
+	notificationsChannel: string;
 }
 
-const secrets: Secrets = {
+const secrets = {
 	environment: process.env.NODE_ENV ?? "production",
 	discordToken: process.env.DISCORD_TOKEN ?? "",
 	tomoId: process.env.TOMO_ID ?? "",
 	ownerId: process.env.OWNER_ID ?? "",
 	databaseUrl: process.env.DATABASE_URL ?? "",
 	devDatabaseUrl: process.env.DEV_DATABASE_URL ?? "",
-};
+	notificationsChannel: process.env.NOTIFICATIONS_CHANNEL_ID ?? "",
+} satisfies Secrets;
 
-if (Object.values(secrets).includes(""))
-	if (
-		(secrets.environment === "production" && secrets.databaseUrl === "") ||
-		(secrets.environment === "development" && secrets.devDatabaseUrl === "")
+const missingVars = Object.entries(secrets).filter(([key, value]) => !value);
+
+if (
+	missingVars.length > 0 &&
+	!(
+		secrets.environment === "development" &&
+		missingVars.length === 1 &&
+		missingVars[0][0] === "databaseUrl"
+	) &&
+	!(
+		secrets.environment === "production" &&
+		missingVars.length === 1 &&
+		missingVars[0][0] === "devDatabaseUrl"
 	)
-		throw new Error("Not all environment variables are set.");
+) {
+	console.error(
+		"Missing environment variables:",
+		missingVars.map(([key]) => key).join(", "),
+	);
+}
 
 export default secrets;

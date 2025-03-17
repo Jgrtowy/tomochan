@@ -6,7 +6,7 @@
 		"dev": "NODE_ENV=development bun --watch .",
 		"start": "NODE_ENV=production bun .",
 		"docker:build": "docker compose build",
-		"db:push": "bunx --bun drizzle-kit push --config=drizzle-dev.config.ts",
+		"db:push": "NODE_ENV=development bunx --bun drizzle-kit push",
 		"docker:up": "docker compose up -d",
 		"docker:down": "docker compose down",
 		"docker:rebuild": "docker compose down tomochan && docker compose build tomochan && docker compose up -d tomochan"

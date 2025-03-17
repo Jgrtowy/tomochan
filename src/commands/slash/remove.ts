@@ -2,12 +2,11 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
-import { eq, sql } from "drizzle-orm";
-import { ownerCommand } from "..";
-import { db } from "../..";
-import { names } from "../../db/schema";
-import secrets from "../../secrets";
-import { CommandScope, type SlashCommandObject } from "../types";
+import { eq } from "drizzle-orm";
+import { CommandScope, type SlashCommandObject } from "~/commands/types";
+import { namesSchema } from "~/db/schema";
+import { db } from "~/index";
+import { modCommand } from "~/lib/allowed";
 
 export default {
 	builder: new SlashCommandBuilder()
@@ -28,16 +27,16 @@ export default {
 		)).getString("id");
 		if (!id) return;
 
-		if (!ownerCommand(interaction)) return;
+		if (!modCommand(interaction)) return;
 
 		const fullNameRow = (
 			await db
 				.select()
-				.from(names)
-				.where(eq(names.rowNumber, Number(id)))
+				.from(namesSchema)
+				.where(eq(namesSchema.rowNumber, Number(id)))
 		)[0];
 
-		await db.delete(names).where(eq(names.rowNumber, Number(id)));
+		await db.delete(namesSchema).where(eq(namesSchema.rowNumber, Number(id)));
 
 		interaction.reply({
 			content: `> 🗑️ Removed __**${fullNameRow.name}**__ from the list.`,

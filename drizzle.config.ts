@@ -6,6 +6,10 @@ export default defineConfig({
 	schema: "src/db/schema.ts",
 	dialect: "postgresql",
 	dbCredentials: {
-		url: secrets.databaseUrl,
+		url:
+			secrets.environment !== "production"
+				? secrets.devDatabaseUrl
+				: secrets.databaseUrl,
 	},
+	verbose: true,
 });

@@ -2,18 +2,26 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
+import { eq } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
+import { modCommand } from "~/lib/allowed";
 
 export default {
 	builder: new SlashCommandBuilder()
-		.setName("add")
-		.setDescription("Add a Tomo's name.")
+		.setName("update")
+		.setDescription("Update a Tomo's name.")
+		.addNumberOption((option) =>
+			option
+				.setName("id")
+				.setDescription("ID of the name to update.")
+				.setRequired(true),
+		)
 		.addStringOption((option) =>
 			option
 				.setName("name")
-				.setDescription("Tomo`<input>`wsky")
+				.setDescription("New Tomo`<input>`wsky")
 				.setRequired(true),
 		),
 
@@ -23,7 +31,24 @@ export default {
 		let name = (<CommandInteractionOptionResolver>(
 			interaction.options
 		)).getString("name");
-		if (!name) return;
+
+		const id = (<CommandInteractionOptionResolver>(
+			interaction.options
+		)).getNumber("id");
+
+		if (!name || !id) return;
+		if (!modCommand(interaction)) return;
+
+		const before = await db
+			.select()
+			.from(namesSchema)
+			.where(eq(namesSchema.rowNumber, id));
+		if (before.length === 0) {
+			return interaction.reply({
+				content: "> ❌ Name not found.",
+			});
+		}
+
 		name = name
 			.replace(/tomo/gi, "")
 			.replace(/wsky/gi, "")
@@ -40,13 +65,13 @@ export default {
 			});
 		}
 
-		await db.insert(namesSchema).values({
-			name: fullName,
-			addedBy: interaction.user.id,
-		});
+		await db
+			.update(namesSchema)
+			.set({ name: fullName })
+			.where(eq(namesSchema.rowNumber, id));
 
 		interaction.reply({
-			content: `> ✅ Added __**${fullName}**__ to the list.`,
+			content: `> ✅ Updated __**${before[0].name}**__ to __**${fullName}**__.`,
 		});
 	},
 } as SlashCommandObject;

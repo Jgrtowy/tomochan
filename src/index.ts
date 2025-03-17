@@ -9,11 +9,11 @@ import {
 	Partials,
 } from "discord.js";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import { autocomplete, executeCommand, registerCommands } from "./commands";
-import { names } from "./db/schema";
-import { checkFor } from "./lib/checkFor";
-import { changeNickname, scheduleJob } from "./lib/scheduler";
-import secrets from "./secrets";
+import { autocomplete, executeCommand, registerCommands } from "~/commands";
+import { guildsList, modsList, updateAllowed } from "~/lib/allowed";
+import { changeNickname, scheduleJob, setPresence } from "~/lib/scheduler";
+import secrets from "~/secrets";
+import { sendDeployNotification } from "./lib/notifications";
 
 const start = new Date();
 
@@ -50,47 +50,24 @@ client.once(Events.ClientReady, async (client) => {
 	guilds = client.guilds.cache.map((guild) => guild);
 	console.log(
 		guilds.length &&
-			`║ ⚔️  Guilds [${client.guilds.cache.map(() => {}).length}]: ${client.guilds.cache.map((guild) => guild.name).join(", ")}`,
+			`║ 📋 Joined guilds: [${client.guilds.cache.map(() => {}).length}]: ${client.guilds.cache.map((guild) => guild.name).join(", ")}`,
 	);
 	if (guilds.length === 0) {
 		console.log("║ ❌  No guilds found. Exiting...");
 		process.exit(1);
 	}
-	const foundIn: Guild[] = [];
-	for (const guild of guilds) {
-		const found = await checkFor(guild, "tomo");
-		if (found) {
-			foundIn.push(guild);
-		}
-	}
-
-	if (foundIn.length === 0) {
-		console.log("║ ❌  Tomo not found in any guild. Exiting...");
-		process.exit(1);
-	}
-	console.log(
-		`║ 👻 Tomo found in ${foundIn.length} guilds: ${foundIn.map((guild) => guild.name).join(", ")}`,
-	);
-	foundIn.length = 0;
-
-	for (const guild of guilds) {
-		const found = await checkFor(guild, "owner");
-		if (found) {
-			foundIn.push(guild);
-		}
-	}
-
-	if (foundIn.length === 0) {
-		console.log("║ ❌  Owner not found in any guild. Exiting...");
-		process.exit(1);
-	}
-	console.log(
-		`║ 👀 Owner found in ${foundIn.length} guilds: ${foundIn.map((guild) => guild.name).join(", ")}`,
-	);
 
 	console.log("║ 📡 Registering commands...");
 	registerCommands(client.user);
+	await updateAllowed();
 	scheduleJob();
+
+	console.log(
+		"║ ⚔️  Allowed guilds:",
+		guildsList.map((guild) => guild.guildName).join(", "),
+	);
+
+	console.log("║ 👑 Mods:", modsList.map((mod) => mod.displayName).join(", "));
 
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (interaction.isChatInputCommand() || interaction.isContextMenuCommand())
@@ -98,15 +75,8 @@ client.once(Events.ClientReady, async (client) => {
 		if (interaction.isAutocomplete()) return autocomplete(interaction);
 	});
 
-	client.user.setPresence({
-		activities: [
-			{
-				type: ActivityType.Custom,
-				name: secrets.environment !== "production" ? "dev mode" : "sup!",
-			},
-		],
-		status: secrets.environment !== "production" ? "dnd" : "online",
-	});
+	setPresence(client);
+	if (secrets.environment === "production") sendDeployNotification(client);
 	console.log(
 		`║ 🚀 Started in ${((new Date().getTime() - start.getTime()) / 1000).toFixed(3)} seconds.`,
 	);

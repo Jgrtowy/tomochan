@@ -2,11 +2,10 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
-import { max, sql } from "drizzle-orm";
-import { ownerCommand } from "..";
-import { db } from "../..";
-import { names } from "../../db/schema";
-import { CommandScope, type SlashCommandObject } from "../types";
+import { sql } from "drizzle-orm";
+import { CommandScope, type SlashCommandObject } from "~/commands/types";
+import { db } from "~/index";
+import { ownerCommand } from "~/lib/allowed";
 
 export default {
 	builder: new SlashCommandBuilder()
