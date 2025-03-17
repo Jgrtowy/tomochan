@@ -1,15 +1,30 @@
-# tomochan
+# TomoChan
 
-To install dependencies:
+Discord bot build as a fun project for my friend that changes his nickname to `Tomo<something>wsky` with one of those stored in a database.
 
-```bash
-bun install
-```
+## Development
 
-To run:
+- Install bun
 
 ```bash
-bun run index.ts
+# Linux & macOS
+curl -fsSL https://bun.sh/install | bash
+
+# Windows
+powershell -c "irm bun.sh/install.ps1 | iex"
 ```
 
-This project was created using `bun init` in bun v1.1.34. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- Change `.env.example` to `.env` and fill out blank fields
+
+- Push database schema
+
+```bash
+bun db:push
+```
+
+- Run the bot
+
+```bash
+bun dev
+```
+
