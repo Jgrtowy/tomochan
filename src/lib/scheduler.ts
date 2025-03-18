@@ -1,7 +1,7 @@
 import { CronJob, validateCronExpression } from "cron";
 import { ActivityType, type Client } from "discord.js";
-import { count, sql } from "drizzle-orm";
-import { namesSchema } from "~/db/schema";
+import { count, eq, notInArray, sql } from "drizzle-orm";
+import { namesSchema, usedSchema } from "~/db/schema";
 import { client, db, guilds } from "~/index";
 import { guildsList } from "~/lib/allowed";
 import secrets from "~/secrets";
@@ -31,10 +31,21 @@ export function scheduleJob() {
 	console.log("║ ⏳ Registered jobs.");
 }
 
-export async function changeNickname(): Promise<undefined | string> {
+export async function changeNickname(
+	change: boolean | undefined = true,
+): Promise<undefined | string> {
+	const used = await db
+		.select({ id: usedSchema.nameId })
+		.from(usedSchema)
+		.then((res) => res.map((r) => r.id));
 	const name = (
-		await db.select().from(namesSchema).orderBy(sql`RANDOM()`).limit(1)
-	)[0];
+		await db
+			.select()
+			.from(namesSchema)
+			.where(used.length ? notInArray(namesSchema.id, used) : sql`1=1`)
+			.orderBy(sql`RANDOM()`)
+			.limit(1)
+	)[0] as { id: number; name: string };
 
 	if (!name) return;
 
@@ -55,8 +66,19 @@ export async function changeNickname(): Promise<undefined | string> {
 			console.error(`║ ❌ Insufficient permissions in ${foundIn.name}.`);
 			continue;
 		}
-		await member.setNickname(name.name);
+		change && (await member.setNickname(name.name));
 	}
+
+	const highestPositionResult = await db
+		.select({ maxPos: sql<number>`COALESCE(MAX(position), 0)` })
+		.from(usedSchema);
+
+	const nextPosition = (highestPositionResult[0]?.maxPos || 0) + 1;
+
+	await db.insert(usedSchema).values({
+		nameId: name.id,
+		position: nextPosition,
+	});
 	return name.name;
 }
 
@@ -69,8 +91,8 @@ export async function setPresence(client: Client) {
 				type: ActivityType.Custom,
 				name:
 					secrets.environment !== "production"
-						? "dev mode"
-						: `Comes with ${total} Tomo's!`,
+						? "yoghurt's breaking stuff"
+						: `Comes with ${total[0].count} Tomo's!`,
 			},
 		],
 		status: secrets.environment !== "production" ? "dnd" : "online",

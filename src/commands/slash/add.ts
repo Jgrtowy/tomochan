@@ -1,6 +1,6 @@
 import {
-    type CommandInteractionOptionResolver,
-    SlashCommandBuilder,
+	type CommandInteractionOptionResolver,
+	SlashCommandBuilder,
 } from "discord.js";
 import { eq } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
@@ -27,8 +27,7 @@ export default {
 		if (!name) return;
 		name = name
 			.replace(/tomo/gi, "")
-			.replace(/wsky/gi, "")
-			.replace(/wski/gi, "")
+			.replace(/owsk[i,y]/gi, "")
 			.trim();
 		if (name) {
 			name = name.charAt(0).toUpperCase() + name.slice(1);
@@ -41,13 +40,16 @@ export default {
 			});
 		}
 
-        const exists = await db.select().from(namesSchema).where(eq(namesSchema.name, fullName));
-        if (exists.length !== 0) {
-            interaction.reply({
-                content: `> ❌ __**${fullName}**__ is already in the list.`,
-            });
-            return
-        }
+		const exists = await db
+			.select()
+			.from(namesSchema)
+			.where(eq(namesSchema.name, fullName));
+		if (exists.length !== 0) {
+			interaction.reply({
+				content: `> ❌ __**${fullName}**__ is already in the list.`,
+			});
+			return;
+		}
 
 		await db.insert(namesSchema).values({
 			name: fullName,

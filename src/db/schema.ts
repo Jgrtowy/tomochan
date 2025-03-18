@@ -21,3 +21,11 @@ export const modsSchema = pgTable("mods", {
 	userId: varchar({ length: 255 }).notNull(),
 	displayName: varchar({ length: 255 }).notNull(),
 });
+
+export const usedSchema = pgTable("used", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity(),
+	nameId: integer()
+		.notNull()
+		.references(() => namesSchema.id),
+	position: integer().notNull(),
+});
