@@ -1,7 +1,8 @@
 import {
-	type CommandInteractionOptionResolver,
-	SlashCommandBuilder,
+    type CommandInteractionOptionResolver,
+    SlashCommandBuilder,
 } from "discord.js";
+import { eq } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
@@ -39,6 +40,14 @@ export default {
 				content: "> ❌ Whole name is too long. Max length is 32 characters.",
 			});
 		}
+
+        const exists = await db.select().from(namesSchema).where(eq(namesSchema.name, fullName));
+        if (exists.length !== 0) {
+            interaction.reply({
+                content: `> ❌ __**${fullName}**__ is already in the list.`,
+            });
+            return
+        }
 
 		await db.insert(namesSchema).values({
 			name: fullName,
