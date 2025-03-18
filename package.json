@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "NODE_ENV=development bun --watch .",
-		"start": "NODE_ENV=production bun .",
+		"start": "NODE_ENV=production bun ./src/index.ts",
 		"docker:build": "docker compose build",
 		"db:push": "bunx --bun drizzle-kit --config=drizzle.config.ts push",
 		"docker:up": "docker compose up -d",
