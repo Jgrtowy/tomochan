@@ -14,7 +14,7 @@ export default {
 		.addStringOption((option) =>
 			option
 				.setName("name")
-				.setDescription("Tomo`<input>`wsky")
+				.setDescription("Tomo`<input>`owsky")
 				.setRequired(true),
 		),
 
@@ -32,7 +32,7 @@ export default {
 		if (name) {
 			name = name.charAt(0).toUpperCase() + name.slice(1);
 		}
-		const fullName = `Tomo${name}wsky`;
+		const fullName = `Tomo${name}owsky`;
 
 		if (fullName.length > 32) {
 			return interaction.reply({
