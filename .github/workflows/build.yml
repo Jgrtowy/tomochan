@@ -26,3 +26,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: jgrtowy/tomochan:latest
+      - name: Trigger watchtower
+        uses: fjogeleit/http-request-action@v1
+        with:
+            url: 'http://${{ secrets.ENDPOINT }}/v1/update/'
+            method: 'GET'
+            bearerToken: ${{ secrets.WATCHTOWER_TOKEN }}

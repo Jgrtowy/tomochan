@@ -21,7 +21,7 @@ export default {
 		.addStringOption((option) =>
 			option
 				.setName("name")
-				.setDescription("New Tomo`<input>`wsky")
+				.setDescription("New Tomo`<input>`owsky")
 				.setRequired(true),
 		),
 
@@ -51,13 +51,13 @@ export default {
 
 		name = name
 			.replace(/tomo/gi, "")
-			.replace(/wsky/gi, "")
-			.replace(/wski/gi, "")
+			.replace(/owsky/gi, "")
+			.replace(/owski/gi, "")
 			.trim();
 		if (name) {
 			name = name.charAt(0).toUpperCase() + name.slice(1);
 		}
-		const fullName = `Tomo${name}wsky`;
+		const fullName = `Tomo${name}owsky`;
 
 		if (fullName.length > 32) {
 			return interaction.reply({
