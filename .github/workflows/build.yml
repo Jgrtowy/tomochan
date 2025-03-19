@@ -29,6 +29,9 @@ jobs:
       - name: Trigger watchtower
         uses: fjogeleit/http-request-action@v1
         with:
-            url: 'http://${{ secrets.ENDPOINT }}/v1/update/'
+            url: 'http://${{secrets.ENDPOINT}}/v1/update'
             method: 'GET'
-            bearerToken: ${{ secrets.WATCHTOWER_TOKEN }}
+            customHeaders: '{"Authorization": "Bearer ${{secrets.WATCHTOWER_TOKEN}}"}'
+            ignoreSsl: true
+            preventFailureOnNoResponse: "true"
+            timeout: 90000
