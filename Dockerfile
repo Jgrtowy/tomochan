@@ -4,7 +4,7 @@ WORKDIR /app
 COPY bun.lockb package.json tsconfig.json ./
 COPY src/ ./src/
 
-RUN bun install --frozen-lockfile
+RUN bun install
 
 RUN chmod -R 777 /app
 ENV NODE_ENV=production
