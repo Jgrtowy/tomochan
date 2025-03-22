@@ -3,7 +3,7 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from "discord.js";
-import { asc, count, desc } from "drizzle-orm";
+import { count, desc } from "drizzle-orm";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
 import { CommandScope, type SlashCommandObject } from "../types";

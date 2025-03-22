@@ -1,13 +1,53 @@
 services:
   tomochan:
-    build:
-      context: ./
-    container_name: tomochan
+    # when developing
+    # build:
+    #   context: "./"
+
+    # when hosting
+    image: ghcr.io/jgrtowy/tomochan:main
+
     environment:
       TZ: "Europe/Warsaw"
-      NODE_ENV: "production"
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
-      TOMO_ID: ${TOMO_ID}
-      OWNER_ID: ${OWNER_ID}
-      DATABASE_URL: ${DATABASE_URL}
-      NOTIFICATIONS_CHANNEL_ID: ${NOTIFICATIONS_CHANNEL_ID}
+    
+    env_file: ".env"
+
+    labels:
+      - com.centurylinklabs.watchtower.scope=tomochan
+
+  # delete if you already have the db
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+
+  # checks for image updates
+  watchtower:
+    image: beatkind/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --debug --cleanup --scope tomochan --http-api-update --http-api-periodic-polls --include-restarting
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+    ports:
+      - 8080:8080
+    environment:
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN}
+
+volumes:
+  pgdata:
+  
+networks:
+  default:
+    driver: bridge

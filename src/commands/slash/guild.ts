@@ -2,7 +2,7 @@ import {
 	type CommandInteractionOptionResolver,
 	SlashCommandBuilder,
 } from "discord.js";
-import { eq, max } from "drizzle-orm";
+import { eq, } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { guildsSchema } from "~/db/schema";
 import { client, db } from "~/index";

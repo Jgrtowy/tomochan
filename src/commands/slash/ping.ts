@@ -1,19 +1,27 @@
-import {
-	type CommandInteractionOptionResolver,
-	SlashCommandBuilder,
-} from "discord.js";
+import datetimeDifference from "datetime-difference";
+import { SlashCommandBuilder } from "discord.js";
+import { asc } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
+import { namesSchema } from "~/db/schema";
+import { botStart, db } from "~/index";
 
 export default {
-	builder: new SlashCommandBuilder()
-		.setName("ping")
-		.setDescription("Check latency and stuff."),
+    builder: new SlashCommandBuilder().setName("ping").setDescription("Check latency and stuff."),
 
-	scope: CommandScope.Global,
+    scope: CommandScope.Global,
 
-	run: async (interaction) => {
-		interaction.reply({
-			content: "> To be added!",
-		});
-	},
+    run: async (interaction) => {
+        const start = new Date();
+        await interaction.reply({ content: "<:tf:1352618473720647700>" });
+        const dbStart = performance.now();
+        await db.select().from(namesSchema).limit(100).orderBy(asc(namesSchema.rowNumber));
+        const dbEnd = performance.now();
+        const diff = datetimeDifference(start, botStart);
+        await interaction.editReply({
+            content: `\`\`\`yml
+            client: ${interaction.createdTimestamp - start.getTime()}ms
+            db 100 recs: ${(dbEnd - dbStart).toFixed(3)}ms
+            uptime: "${JSON.stringify(diff).replace(/[{}"]/gi, "").replaceAll(",", ", ").replaceAll(":", ": ")}"\`\`\``,
+        });
+    },
 } as SlashCommandObject;

@@ -1,6 +1,5 @@
-import { Database } from "bun:sqlite";
+
 import {
-	ActivityType,
 	Client,
 	Events,
 	GatewayIntentBits,
@@ -11,14 +10,14 @@ import {
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { autocomplete, executeCommand, registerCommands } from "~/commands";
 import { guildsList, modsList, updateAllowed } from "~/lib/allowed";
-import { changeNickname, scheduleJob, setPresence } from "~/lib/scheduler";
+import { scheduleJob, setPresence } from "~/lib/scheduler";
 import secrets from "~/secrets";
 import { sendDeployNotification } from "./lib/notifications";
 
-const start = new Date();
+export const botStart = new Date();
 
 console.log(`╔════════════════════════════════════════════════════
-║ 🤖 TomoChan's starting! ${start.toLocaleString()}
+║ 🤖 TomoChan's starting! ${botStart.toLocaleString()}
 ${secrets.environment === "production" ? "║ 🌐 Production" : "║ 🛠️  Development"}
 ╠════════════════════════════════════════════════════`);
 export let db: NodePgDatabase;
@@ -75,10 +74,10 @@ client.once(Events.ClientReady, async (client) => {
 		if (interaction.isAutocomplete()) return autocomplete(interaction);
 	});
 
-	setPresence(client);
+	setPresence();
 	if (secrets.environment === "production") sendDeployNotification(client);
 	console.log(
-		`║ 🚀 Started in ${((new Date().getTime() - start.getTime()) / 1000).toFixed(3)} seconds.`,
+		`║ 🚀 Started in ${((new Date().getTime() - botStart.getTime()) / 1000).toFixed(3)} seconds.`,
 	);
 });
 
