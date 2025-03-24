@@ -29,7 +29,24 @@ export function scheduleJob() {
     console.log("║ ⏳ Registered jobs.");
 }
 
-export async function changeNickname(change: boolean | undefined = true): Promise<undefined | string> {
+export async function changeNickname(change: boolean | undefined = true, desired?: string): Promise<undefined | string> {
+    if (desired) {
+        for (const guild of guildsList) {
+            const foundIn = guilds.find((g) => g.id === guild.guildId);
+            if (!foundIn) {
+                continue;
+            }
+            const member = await foundIn.members.fetch(secrets.tomoId).catch(() => null);
+            if (!member) continue;
+            if (!member.manageable) {
+                console.error(`║ ❌ Insufficient permissions in ${foundIn.name}.`);
+                continue;
+            }
+            change && (await member.setNickname(desired));
+        }
+        console.log(`║ 🔄 ${!change && "(not)"} Changing nickname to ${desired} @ ${new Date().toLocaleString()}`);
+        return desired;
+    }
     const used = await db
         .select({ id: usedSchema.nameId })
         .from(usedSchema)
@@ -45,7 +62,7 @@ export async function changeNickname(change: boolean | undefined = true): Promis
 
     if (!name) return;
 
-    console.log(`║ 🔄 Changing nickname to ${name.name} @ ${new Date().toLocaleString()}`);
+    console.log(`║ 🔄 ${!change && "(not)"} Changing nickname to ${name.name} @ ${new Date().toLocaleString()}`);
 
     for (const guild of guildsList) {
         const foundIn = guilds.find((g) => g.id === guild.guildId);

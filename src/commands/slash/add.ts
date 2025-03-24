@@ -23,6 +23,11 @@ export default {
         if (name) {
             name = name.charAt(0).toUpperCase() + name.slice(1);
         }
+        if (/[^a-zA-Z0-9ąćęłńóśźż\s]/.test(name)) {
+            return interaction.reply({
+                content: "> ❌ Name can only contain letters.",
+            });
+        }
         const fullName = `Tomo${name}owsky`;
 
         if (fullName.length > 32) {

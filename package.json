@@ -10,7 +10,8 @@
         "docker:down": "docker compose down",
         "docker:build": "docker compose build",
         "docker:rebuild": "docker compose down tomochan && docker compose build tomochan && docker compose up -d tomochan",
-        "lint": "bunx @biomejs/biome lint --write --unsafe --error-on-warnings --config-path=biome.cli.json ./src/"
+        "lint": "bunx @biomejs/biome lint --write --unsafe --error-on-warnings --config-path=biome.cli.json ./src/",
+        "format": "bunx @biomejs/biome format --write --config-path=biome.cli.json ./src/"
     },
     "devDependencies": {
         "@types/bun": "latest",

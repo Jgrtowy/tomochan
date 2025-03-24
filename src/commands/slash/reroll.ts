@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
-import { ownerCommand } from "~/lib/allowed";
+import { modCommand } from "~/lib/allowed";
 import { changeNickname } from "~/lib/scheduler";
 
 export default {
@@ -9,10 +9,9 @@ export default {
     scope: CommandScope.Global,
 
     run: async (interaction) => {
-        if (!ownerCommand(interaction)) return;
+        if (!modCommand(interaction)) return;
 
         const name = await changeNickname();
-
         interaction.reply({
             content: `> 🔁 Rerolled name to ${name}.`,
         });

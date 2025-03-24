@@ -1,13 +1,21 @@
-FROM oven/bun:1 AS base
+FROM oven/bun AS build
 WORKDIR /app
 
-COPY bun.lockb package.json tsconfig.json ./
-COPY src/ ./src/
+COPY bun.lockb .
+COPY package.json .
 
-RUN bun install
-
-RUN chmod -R 777 /app
 ENV NODE_ENV=production
-USER bun
+RUN bun install --frozen-lockfile
 
-ENTRYPOINT [ "bun", "run", "./src/index.ts" ]
+COPY tsconfig.json .
+COPY src ./src
+
+RUN bun build ./src/index.ts --compile --outfile cli
+
+FROM ubuntu:22.04
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=build /app/cli /app/cli
+
+CMD ["/app/cli"]

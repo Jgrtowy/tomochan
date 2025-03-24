@@ -1,43 +1,26 @@
-# TomoChan
+# tomochan
 
-Discord bot build as a fun project for my friend that changes his nickname to `Tomo<something>owsky` with one of those stored in a database.
+simple discord bot build as a fun project for my friend, it changes his nickname to `Tomo<something>owsky`
 
-## development
+what started as a simple joke quickly evolved into a feature-packed monstrosity with new features being added regularly 😵‍💫
 
-Install bun
+this is (so far) the best thing i've built
 
-```bash
-# Linux & macOS
-curl -fsSL https://bun.sh/install | bash
+## developing/building 
 
-# Windows
-powershell -c "irm bun.sh/install.ps1 | iex"
-```
+these sections are usually *boooooooring* 🥱
 
-Copy `.env.example` contents to `.env` and fill out blank fields
+just use `bun dev` for developing and `docker compose up -d` when hosting, don't forget about copying `.env.example` to `.env`, filling it out and you're ready to go 🚀
 
-Push database schema
+## contributing
 
-```bash
-bun db:push
-```
+found a bug? create an issue
 
-Run the bot
+want to fix something yourself? open a pull request
 
-```bash
-bun dev
-```
+new feature idea? contact me [here](https://jgrtowy.xyz/contact) 
 
-## hosting
+simple as that 😉
 
-Install docker or docker desktop.
+#### special thanks to [saintkappa](https://github.com/theSaintKappa) for half of his codebase i took
 
-Use example `docker-compose.yml` file as a template and adjust it to your needs
-
-Run the bot
-
-```bash
-docker compose up -d
-```
-
-Use bot's `/sql` command and paste contents of `triggers.sql` file.

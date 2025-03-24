@@ -4,6 +4,7 @@ import { asc } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { botStart, db } from "~/index";
+import secrets from "~/secrets";
 
 export default {
     builder: new SlashCommandBuilder().setName("ping").setDescription("Check latency and stuff."),
@@ -17,9 +18,11 @@ export default {
         await db.select().from(namesSchema).limit(100).orderBy(asc(namesSchema.rowNumber));
         const dbEnd = performance.now();
         const diff = datetimeDifference(start, botStart);
+
         await interaction.editReply({
             content: `\`\`\`yml
-            client: ${interaction.createdTimestamp - start.getTime()}ms
+            env: ${secrets.environment}
+            client: ${Math.abs(interaction.createdTimestamp - start.getTime())}ms
             db 100 recs: ${(dbEnd - dbStart).toFixed(3)}ms
             uptime: "${JSON.stringify(diff).replace(/[{}"]/gi, "").replaceAll(",", ", ").replaceAll(":", ": ")}"\`\`\``,
         });

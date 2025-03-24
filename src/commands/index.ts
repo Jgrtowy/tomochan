@@ -55,7 +55,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     if (!command || !command.autocomplete) return;
 
     try {
-        await interaction.respond(await command.autocomplete(interaction.options.getSubcommand()));
+        await interaction.respond(await command.autocomplete(interaction));
     } catch (err) {
         console.error(`Failed to autocomplete: ${err}`);
     }
