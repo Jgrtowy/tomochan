@@ -3,6 +3,7 @@ import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { modsSchema } from "~/db/schema";
 import { db } from "~/index";
 import { ownerCommand, pullAllowed } from "~/lib/allowed";
+import { successEmbed } from "~/lib/embeds";
 
 export default {
     builder: new SlashCommandBuilder()
@@ -24,7 +25,7 @@ export default {
         });
 
         interaction.reply({
-            content: `> ✅ Added __**${user.displayName}**__ to the mods list.`,
+            embeds: [successEmbed.setDescription(`${user} is now a list moderator.`)],
         });
 
         pullAllowed();

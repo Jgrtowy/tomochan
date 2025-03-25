@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { modCommand } from "~/lib/allowed";
+import { successEmbed } from "~/lib/embeds";
 import { changeNickname } from "~/lib/scheduler";
 
 export default {
@@ -13,7 +14,7 @@ export default {
 
         const name = await changeNickname();
         interaction.reply({
-            content: `> 🔁 Rerolled name to ${name}.`,
+            embeds: [successEmbed.setDescription(`Rerolled Tomo's name to **${name}**.`)],
         });
     },
 } as SlashCommandObject;

@@ -1,18 +1,19 @@
 services:
   tomochan:
-    # when developing
+    # not needed if you have the image
     # build:
     #   context: "./"
 
-    # when hosting
     image: ghcr.io/jgrtowy/tomochan:main
 
     environment:
       TZ: "Europe/Warsaw"
     
     env_file:
+    # standalone/desktop
       - .env
-      - stack.env
+    # portainer
+    #   - stack.env
 
     labels:
       - com.centurylinklabs.watchtower.scope=tomochan

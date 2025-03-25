@@ -83,7 +83,6 @@ export default {
         const subcommand = interaction.options.getSubcommand();
         const args = interaction.options.getString("scope");
         if (!args) return;
-        console.log(args);
 
         switch (subcommand) {
             case "list":

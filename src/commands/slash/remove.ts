@@ -4,6 +4,7 @@ import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
 import { modCommand } from "~/lib/allowed";
+import { trashEmbed } from "~/lib/embeds";
 import { setPresence } from "~/lib/scheduler";
 
 export default {
@@ -30,7 +31,7 @@ export default {
         await db.delete(namesSchema).where(eq(namesSchema.rowNumber, Number(id)));
 
         interaction.reply({
-            content: `> 🗑️ Removed __**${fullNameRow.name}**__ from the list.`,
+            embeds: [trashEmbed.setDescription(`Removed Tomo's name #${fullNameRow.rowNumber}. **${fullNameRow.name}**.`)],
         });
 
         await setPresence().catch(null);

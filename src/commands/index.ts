@@ -2,8 +2,12 @@ import { type AutocompleteInteraction, type ChatInputCommandInteraction, type Cl
 import commandObjects from "~/commands/list";
 import { guilds } from "~/index";
 import { guildsList } from "~/lib/allowed";
+import { errorEmbed } from "~/lib/embeds";
+import { logger } from "~/lib/log";
 import secrets from "~/secrets";
 import { CommandScope, type ContextMenuCommandObject, type SlashCommandObject } from "./types";
+
+const log = logger().namespace("commands/index.ts").seal();
 
 const commands = new Map<string, SlashCommandObject | ContextMenuCommandObject>([...commandObjects].map((command) => [command.builder.name, command]));
 
@@ -28,9 +32,9 @@ export async function registerCommands(clientUser: ClientUser) {
             guildCommands && (await rest.put(Routes.applicationGuildCommands(clientUser.id, guild.id), { body: guildCommands }));
         }
 
-        console.log(`║ 💬 Registered ${globalCommands.length + guildCommands.length} commands!`);
+        log.success(`Registered ${globalCommands.length + guildCommands.length} commands!`);
     } catch (err) {
-        console.error(`Failed to register commands: ${err}`);
+        log.error(`Failed to register commands: ${err}`);
     }
 }
 
@@ -43,9 +47,9 @@ export async function executeCommand(interaction: ChatInputCommandInteraction | 
     try {
         await command.run(<ChatInputCommandInteraction & ContextMenuCommandInteraction>interaction);
     } catch (err) {
-        console.error(`Failed to execute command: ${err}`);
+        log.alert(`Failed to execute command: ${err}`);
         await interaction.reply({
-            content: "An error occurred while executing this command.",
+            embeds: [errorEmbed.setDescription("Failed to execute command. Owner has been notified.")],
         });
     }
 }
@@ -57,7 +61,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     try {
         await interaction.respond(await command.autocomplete(interaction));
     } catch (err) {
-        console.error(`Failed to autocomplete: ${err}`);
+        log.error(`Failed to autocomplete: ${err}`);
     }
 }
 
@@ -65,8 +69,9 @@ function checkGuild(interaction: ChatInputCommandInteraction | ContextMenuComman
     for (const guild of guildsList) {
         if (guild.guildId === interaction.guildId) return true;
     }
+
     interaction.reply({
-        content: "> ❌ This guild isn't allowed to run commands.",
+        embeds: [errorEmbed.setDescription("This guild is not allowed to use the bot.")],
     });
 
     return false;

@@ -1,21 +1,23 @@
-import { type CommandInteractionOptionResolver, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { type CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { count, desc } from "drizzle-orm";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
+import { infoEmbed } from "~/lib/embeds";
 import { CommandScope, type SlashCommandObject } from "../types";
 
 export default {
     builder: new SlashCommandBuilder()
         .setName("leaderboard")
         .setDescription("Check who added most Tomo's.")
-        .addIntegerOption((option) => option.setName("page").setDescription("Page number.").setRequired(false)),
+        .addIntegerOption((option) => option.setName("page").setDescription("Page number.").setRequired(false).setAutocomplete(true)),
 
     scope: CommandScope.Global,
     autocomplete: async () => {
         const total = await db.select({ count: count() }).from(namesSchema).groupBy(namesSchema.addedBy);
 
         const totalPages = Math.ceil(total[0].count / 20);
-        return Array.from({ length: totalPages }, (_, i) => ({
+
+        return Array.from({ length: totalPages > 24 ? 24 : totalPages - 1 }, (_, i) => ({
             name: `${i + 1}`,
             value: i + 1,
         }));
@@ -43,7 +45,8 @@ export default {
 
         if (!query.length) {
             interaction.reply({
-                content: "> 📜 No names found.",
+                embeds: [infoEmbed.setDescription("No contributors found.")],
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }

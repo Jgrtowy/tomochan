@@ -4,6 +4,7 @@ import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { guildsSchema } from "~/db/schema";
 import { client, db } from "~/index";
 import { ownerCommand, pullAllowed } from "~/lib/allowed";
+import { errorEmbed, successEmbed } from "~/lib/embeds";
 
 export default {
     builder: new SlashCommandBuilder()
@@ -19,7 +20,7 @@ export default {
         if (!ownerCommand(interaction)) return;
         if (!client.guilds.cache.has(guild ?? interaction.guildId ?? "") || !guild) {
             return interaction.reply({
-                content: "> ❌ Guild ID not found.",
+                embeds: [errorEmbed.setDescription("Guild not found.")],
             });
         }
 
@@ -27,17 +28,18 @@ export default {
 
         if (found.length !== 0) {
             return interaction.reply({
-                content: "> ❌ Guild already in the list.",
+                embeds: [errorEmbed.setDescription("Guild is already in the list.")],
             });
         }
 
+        const guildName = client.guilds.cache.get(guild)?.name ?? "Unknown";
         await db.insert(guildsSchema).values({
             guildId: guild,
-            guildName: client.guilds.cache.get(guild)?.name ?? "Unknown",
+            guildName,
         });
 
         interaction.reply({
-            content: `> ✅ Added __**${client.guilds.cache.get(guild)?.name}**__ to the list.`,
+            embeds: [successEmbed.setDescription(`Guild \`${guildName}\` added.`)],
         });
 
         pullAllowed();

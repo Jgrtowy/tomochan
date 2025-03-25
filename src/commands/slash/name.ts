@@ -1,8 +1,9 @@
 import { type CommandInteractionOptionResolver, SlashCommandBuilder } from "discord.js";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
-import { namesSchema } from "~/db/schema";
+import { namesSchema, usedSchema } from "~/db/schema";
 import { db } from "~/index";
+import { successEmbed } from "~/lib/embeds";
 import { changeNickname } from "~/lib/scheduler";
 
 export default {
@@ -26,10 +27,10 @@ export default {
 
         const name = await db.select().from(namesSchema).where(eq(namesSchema.rowNumber, id));
 
-        await interaction.reply({
-            content: `> ✅ Set __**${name[0].name}**__ as name.`,
-        });
+        await changeNickname(false, name[0] as { id: number; name: string });
 
-        await changeNickname(false, name[0].name);
+        await interaction.reply({
+            embeds: [successEmbed.setDescription(`Changed Tomo's name to **${name[0].name}**.`)],
+        });
     },
 } as SlashCommandObject;

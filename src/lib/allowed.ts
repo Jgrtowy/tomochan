@@ -2,6 +2,7 @@ import type { ChatInputCommandInteraction } from "discord.js";
 import { guildsSchema, modsSchema } from "~/db/schema";
 import { db } from "~/index";
 import secrets from "~/secrets";
+import { errorEmbed } from "./embeds";
 
 export let guildsList: { guildId: string; guildName: string }[] = [];
 export let modsList: { userId: string; displayName: string }[] = [];
@@ -17,7 +18,7 @@ export function modCommand(interaction: ChatInputCommandInteraction) {
         if (mod.userId === interaction.user.id) return true;
     }
     interaction.reply({
-        content: "> ❌ You are not on the mods list.",
+        embeds: [errorEmbed.setDescription("You are not a list moderator.")],
     });
     return false;
 }
@@ -25,7 +26,7 @@ export function modCommand(interaction: ChatInputCommandInteraction) {
 export function ownerCommand(interaction: ChatInputCommandInteraction) {
     if (interaction.user.id === secrets.ownerId) return true;
     interaction.reply({
-        content: "> ❌ You are not the owner of the bot.",
+        embeds: [errorEmbed.setDescription("You are not the owner of the bot.")],
     });
     return false;
 }

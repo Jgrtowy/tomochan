@@ -2,6 +2,7 @@
     "name": "tomochan",
     "module": "src/index.ts",
     "type": "module",
+    "version": "1.1.0",
     "scripts": {
         "dev": "NODE_ENV=development bun --watch .",
         "start": "NODE_ENV=production bun ./src/index.ts",
@@ -23,6 +24,7 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "adze": "^2.2.1",
         "cron": "^4.1.0",
         "datetime-difference": "^1.0.2",
         "discord.js": "^14.18.0",

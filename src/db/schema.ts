@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { date, integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import { date, foreignKey, integer, pgTable, varchar } from "drizzle-orm/pg-core";
 
 export const namesSchema = pgTable("names", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -26,6 +26,6 @@ export const usedSchema = pgTable("used", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     nameId: integer()
         .notNull()
-        .references(() => namesSchema.id),
+        .references(() => namesSchema.id, { onDelete: "cascade" }),
     position: integer().notNull(),
 });

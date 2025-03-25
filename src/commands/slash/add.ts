@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
+import { errorEmbed, successEmbed } from "~/lib/embeds";
 import { setPresence } from "~/lib/scheduler";
 
 export default {
@@ -23,23 +24,23 @@ export default {
         if (name) {
             name = name.charAt(0).toUpperCase() + name.slice(1);
         }
-        if (/[^a-zA-Z0-9ąćęłńóśźż\s]/.test(name)) {
+        if (!/^[\p{L}\p{M}\p{N}\s]+$/u.test(name)) {
             return interaction.reply({
-                content: "> ❌ Name can only contain letters.",
+                embeds: [errorEmbed.setDescription("Name can only contain letters, numbers, and spaces.")],
             });
         }
         const fullName = `Tomo${name}owsky`;
 
         if (fullName.length > 32) {
             return interaction.reply({
-                content: "> ❌ Whole name is too long. Max length is 32 characters.",
+                embeds: [errorEmbed.setDescription("Name is too long. Max 32 characters.")],
             });
         }
 
         const exists = await db.select().from(namesSchema).where(eq(namesSchema.name, fullName));
         if (exists.length !== 0) {
             interaction.reply({
-                content: `> ❌ __**${fullName}**__ is already in the list.`,
+                embeds: [errorEmbed.setDescription(`Name ${fullName} already exists.`)],
             });
             return;
         }
@@ -49,8 +50,10 @@ export default {
             addedBy: interaction.user.id,
         });
 
+        const rowNumber = await db.select().from(namesSchema).where(eq(namesSchema.name, fullName));
+
         await interaction.reply({
-            content: `> ✅ Added __**${fullName}**__ to the list.`,
+            embeds: [successEmbed.setDescription(`Name added: #${rowNumber[0].rowNumber}. **${fullName}**.`)],
         });
 
         await setPresence().catch(null);

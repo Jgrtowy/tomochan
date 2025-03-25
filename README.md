@@ -14,11 +14,9 @@ just use `bun dev` for developing and `docker compose up -d` when hosting, don't
 
 ## contributing
 
-found a bug? create an issue
+found a bug or have an idea for a new feature? create an issue
 
-want to fix something yourself? open a pull request
-
-new feature idea? contact me [here](https://jgrtowy.xyz/contact) 
+want to fix something yourself? fork, fix and open a pull request
 
 simple as that 😉
 

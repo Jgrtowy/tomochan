@@ -4,6 +4,7 @@ import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
 import { modCommand } from "~/lib/allowed";
+import { errorEmbed, successEmbed } from "~/lib/embeds";
 
 export default {
     builder: new SlashCommandBuilder()
@@ -32,7 +33,7 @@ export default {
         const before = await db.select().from(namesSchema).where(eq(namesSchema.rowNumber, id));
         if (before.length === 0) {
             return interaction.reply({
-                content: "> ❌ Name not found.",
+                embeds: [errorEmbed.setDescription("Name not found.")],
             });
         }
 
@@ -42,21 +43,21 @@ export default {
         }
         if (/[^a-zA-Z0-9ąćęłńóśźż\s]/.test(name)) {
             return interaction.reply({
-                content: "> ❌ Name can only contain letters.",
+                embeds: [errorEmbed.setDescription("Name can only contain letters, numbers, and spaces.")],
             });
         }
         const fullName = `Tomo${name}owsky`;
 
         if (fullName.length > 32) {
             return interaction.reply({
-                content: "> ❌ Whole name is too long. Max length is 32 characters.",
+                embeds: [errorEmbed.setDescription("Name is too long. Max 32 characters.")],
             });
         }
 
         await db.update(namesSchema).set({ name: fullName }).where(eq(namesSchema.rowNumber, id));
 
         interaction.reply({
-            content: `> ✅ Updated __**${before[0].name}**__ to __**${fullName}**__.`,
+            embeds: [successEmbed.setDescription(`Name updated: #${id}. **${fullName}**.`)],
         });
     },
 } as SlashCommandObject;

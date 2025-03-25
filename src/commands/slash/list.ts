@@ -1,27 +1,32 @@
-import { type CommandInteractionOptionResolver, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { type CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { asc, count } from "drizzle-orm";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
+import { infoEmbed } from "~/lib/embeds";
 import { CommandScope, type SlashCommandObject } from "../types";
 
 export default {
     builder: new SlashCommandBuilder()
         .setName("list")
         .setDescription("List Tomo names.")
-        .addIntegerOption((option) => option.setName("page").setDescription("Page number.").setRequired(true).setAutocomplete(true)),
+        .addIntegerOption((option) => option.setName("page").setDescription("Page number.").setRequired(false).setAutocomplete(true)),
 
     scope: CommandScope.Global,
     autocomplete: async () => {
         const total = await db.select({ count: count() }).from(namesSchema);
         const totalPages = Math.ceil(total[0].count / 20);
-        return Array.from({ length: totalPages }, (_, i) => ({
+
+        return Array.from({ length: totalPages > 24 ? 24 : totalPages - 1 }, (_, i) => ({
             name: `${i + 1}`,
             value: i + 1,
-        }));
+        })).concat({
+            name: `${totalPages}`,
+            value: totalPages,
+        });
     },
 
     run: async (interaction) => {
-        let page = (<CommandInteractionOptionResolver>interaction.options).getInteger("page");
+        let page = (<CommandInteractionOptionResolver>interaction.options).getInteger("page") ?? 1;
 
         if (!page) return;
 
@@ -41,7 +46,8 @@ export default {
 
         if (!query.length) {
             interaction.reply({
-                content: "> 📜 No names found.",
+                embeds: [infoEmbed.setDescription("No Tomo's found.")],
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }

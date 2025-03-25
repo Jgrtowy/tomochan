@@ -5,10 +5,13 @@ import { namesSchema, usedSchema } from "~/db/schema";
 import { client, db, guilds } from "~/index";
 import { guildsList } from "~/lib/allowed";
 import secrets from "~/secrets";
+import { logger } from "./log";
+
+const log = logger().namespace("scheduler.ts").seal();
 
 export function scheduleJob() {
     const interval = "0 0 * * * *";
-    console.log(`${validateCronExpression(interval) ? "║ ✅ Valid" : "║ ❌ Invalid"} cron expression: ${interval}`);
+    log.info(`Scheduling jobs with interval ${validateCronExpression(interval) ? "valid" : "invalid"}: ${interval}`);
     new CronJob(
         interval,
         () => {
@@ -26,10 +29,9 @@ export function scheduleJob() {
         null,
         true,
     );
-    console.log("║ ⏳ Registered jobs.");
 }
 
-export async function changeNickname(change: boolean | undefined = true, desired?: string): Promise<undefined | string> {
+export async function changeNickname(change: boolean | undefined = true, desired?: { id: number; name: string }): Promise<undefined | string> {
     if (desired) {
         for (const guild of guildsList) {
             const foundIn = guilds.find((g) => g.id === guild.guildId);
@@ -39,13 +41,22 @@ export async function changeNickname(change: boolean | undefined = true, desired
             const member = await foundIn.members.fetch(secrets.tomoId).catch(() => null);
             if (!member) continue;
             if (!member.manageable) {
-                console.error(`║ ❌ Insufficient permissions in ${foundIn.name}.`);
+                log.error(`Insufficient permissions in ${foundIn.name}.`);
                 continue;
             }
-            change && (await member.setNickname(desired));
+            change && (await member.setNickname(desired.name));
         }
-        console.log(`║ 🔄 ${!change && "(not)"} Changing nickname to ${desired} @ ${new Date().toLocaleString()}`);
-        return desired;
+
+        log.success(`${!change && "(not)"} ${desired.name} @ ${new Date().toLocaleString()}`);
+
+        const highestPositionResult = await db.select({ maxPos: sql<number>`COALESCE(MAX(position), 0)` }).from(usedSchema);
+        const nextPosition = (highestPositionResult[0]?.maxPos || 0) + 1;
+        await db.insert(usedSchema).values({
+            nameId: desired.id,
+            position: nextPosition,
+        });
+
+        return desired.name;
     }
     const used = await db
         .select({ id: usedSchema.nameId })
@@ -62,8 +73,6 @@ export async function changeNickname(change: boolean | undefined = true, desired
 
     if (!name) return;
 
-    console.log(`║ 🔄 ${!change && "(not)"} Changing nickname to ${name.name} @ ${new Date().toLocaleString()}`);
-
     for (const guild of guildsList) {
         const foundIn = guilds.find((g) => g.id === guild.guildId);
         if (!foundIn) {
@@ -72,20 +81,21 @@ export async function changeNickname(change: boolean | undefined = true, desired
         const member = await foundIn.members.fetch(secrets.tomoId).catch(() => null);
         if (!member) continue;
         if (!member.manageable) {
-            console.error(`║ ❌ Insufficient permissions in ${foundIn.name}.`);
+            log.error(`Insufficient permissions in ${foundIn.name}.`);
             continue;
         }
         change && (await member.setNickname(name.name));
     }
 
     const highestPositionResult = await db.select({ maxPos: sql<number>`COALESCE(MAX(position), 0)` }).from(usedSchema);
-
     const nextPosition = (highestPositionResult[0]?.maxPos || 0) + 1;
-
     await db.insert(usedSchema).values({
         nameId: name.id,
         position: nextPosition,
     });
+
+    log.success(`${!change && "(not)"} ${name.name} @ ${new Date().toLocaleString()}`);
+
     return name.name;
 }
 
