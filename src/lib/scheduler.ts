@@ -10,7 +10,7 @@ import { logger } from "./log";
 const log = logger().namespace("scheduler.ts").seal();
 
 export function scheduleJob() {
-    const interval = "0 0 * * * *";
+    const interval = "0 */15 * * * *";
     log.info(`Scheduling jobs with interval ${validateCronExpression(interval) ? "valid" : "invalid"}: ${interval}`);
     new CronJob(
         interval,
@@ -47,7 +47,7 @@ export async function changeNickname(change: boolean | undefined = true, desired
             change && (await member.setNickname(desired.name));
         }
 
-        log.success(`${!change && "(not)"} ${desired.name} @ ${new Date().toLocaleString()}`);
+        log.success(`${change ? "" : "(not)"} ${desired.name} @ ${new Date().toLocaleString()}`);
 
         const highestPositionResult = await db.select({ maxPos: sql<number>`COALESCE(MAX(position), 0)` }).from(usedSchema);
         const nextPosition = (highestPositionResult[0]?.maxPos || 0) + 1;
@@ -94,7 +94,7 @@ export async function changeNickname(change: boolean | undefined = true, desired
         position: nextPosition,
     });
 
-    log.success(`${!change && "(not)"} ${name.name} @ ${new Date().toLocaleString()}`);
+    log.success(`${change ? "" : "(not)"} ${name.name} @ ${new Date().toLocaleString()}`);
 
     return name.name;
 }

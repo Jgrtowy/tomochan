@@ -27,7 +27,7 @@ export default {
 
         const name = await db.select().from(namesSchema).where(eq(namesSchema.rowNumber, id));
 
-        await changeNickname(false, name[0] as { id: number; name: string });
+        await changeNickname(true, name[0] as { id: number; name: string });
 
         await interaction.reply({
             embeds: [successEmbed.setDescription(`Changed Tomo's name to **${name[0].name}**.`)],

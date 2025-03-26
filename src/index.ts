@@ -30,6 +30,10 @@ process.on("SIGTERM", () => {
     process.exit();
 });
 
+process.on("SIGKILL", () => {
+    process.exit();
+});
+
 export const client = new Client({
     intents: [IntentsBitField.Flags.Guilds, GatewayIntentBits.GuildVoiceStates, IntentsBitField.Flags.GuildMembers, GatewayIntentBits.GuildMembers],
     partials: [Partials.Channel, Partials.Message, Partials.GuildMember],

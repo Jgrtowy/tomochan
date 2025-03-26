@@ -41,7 +41,7 @@ EXECUTE PROCEDURE reorderRowNumber();
 CREATE OR REPLACE FUNCTION usedLimit()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT COUNT(*) FROM "used") > 24 THEN
+  IF (SELECT COUNT(*) FROM "used") > 100 THEN
     DELETE FROM "used"
     WHERE "id" = (SELECT "id" FROM "used" ORDER BY "position" ASC LIMIT 1);
     
