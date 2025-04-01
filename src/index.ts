@@ -3,7 +3,7 @@ import { Client, Events, GatewayIntentBits, type Guild, IntentsBitField, Partial
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { autocomplete, executeCommand, registerCommands } from "~/commands";
 import { guildsList, modsList, pullAllowed } from "~/lib/allowed";
-import { scheduleJob, setPresence } from "~/lib/scheduler";
+import { checkForSpecialDate, scheduleJob, setPresence } from "~/lib/scheduler";
 import secrets from "~/secrets";
 import { version } from "../package.json";
 import { logger } from "./lib/log";
@@ -53,6 +53,7 @@ client.once(Events.ClientReady, async (client) => {
     registerCommands(client.user);
     await pullAllowed();
     scheduleJob();
+    checkForSpecialDate();
 
     log.info("Allowed guilds:", guildsList.map((guild) => guild.guildName).join(", "));
     log.info("Allowed mods:", modsList.map((mod) => mod.displayName).join(", "));

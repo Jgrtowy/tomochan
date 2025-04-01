@@ -1,6 +1,6 @@
 import { CronJob, validateCronExpression } from "cron";
 import { ActivityType } from "discord.js";
-import { count, notInArray, sql } from "drizzle-orm";
+import { arrayContains, count, eq, notInArray, sql } from "drizzle-orm";
 import { namesSchema, usedSchema } from "~/db/schema";
 import { client, db, guilds } from "~/index";
 import { guildsList } from "~/lib/allowed";
@@ -8,6 +8,26 @@ import secrets from "~/secrets";
 import { logger } from "./log";
 
 const log = logger().namespace("scheduler.ts").seal();
+let jobsEnabled = true;
+
+export const checkForSpecialDate = async () => {
+    const today = new Date();
+    const dateString = `${today.getDate().toString().padStart(2, "0")}/${(today.getMonth() + 1).toString().padStart(2, "0")}`;
+    const todayName = await db
+        .select()
+        .from(namesSchema)
+        .where(arrayContains(namesSchema.specialDates, [`${dateString}`]))
+        .limit(1);
+    if (todayName.length > 0) {
+        jobsEnabled && log.info(`Special date found: ${todayName[0].name}`);
+        jobsEnabled = false;
+        changeNickname(true, { id: todayName[0].id, name: todayName[0].name });
+        return;
+    }
+    changeNickname(true);
+    jobsEnabled = true;
+    return;
+};
 
 export function scheduleJob() {
     const interval = "0 */15 * * * *";
@@ -15,7 +35,7 @@ export function scheduleJob() {
     new CronJob(
         interval,
         () => {
-            changeNickname();
+            jobsEnabled && changeNickname();
         },
         null,
         true,
@@ -24,10 +44,20 @@ export function scheduleJob() {
     new CronJob(
         interval,
         () => {
-            setPresence();
+            jobsEnabled && setPresence();
         },
         null,
         true,
+        "Europe/Warsaw",
+    );
+    new CronJob(
+        "0 0 1 * *",
+        async () => {
+            checkForSpecialDate();
+        },
+        null,
+        true,
+        "Europe/Warsaw",
     );
 }
 

@@ -7,7 +7,8 @@ export const namesSchema = pgTable("names", {
     addedBy: varchar({ length: 255 }).notNull(),
     addedAt: integer().default(sql`extract(epoch from now())`),
     rowNumber: integer(),
-    specialDate: date(),
+    specialDates: varchar({ length: 255 }).array().default(sql`ARRAY[]::text[]`),
+    specialDateType: varchar({ length: 255 }).default(sql`null`),
 });
 
 export const guildsSchema = pgTable("guilds", {

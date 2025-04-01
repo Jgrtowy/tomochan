@@ -20,11 +20,7 @@ export default {
         const diff = datetimeDifference(start, botStart);
 
         await interaction.editReply({
-            content: `\`\`\`yml
-            env: ${secrets.environment}
-            client: ${Math.abs(interaction.createdTimestamp - start.getTime())}ms
-            db 100 recs: ${(dbEnd - dbStart).toFixed(3)}ms
-            uptime: "${JSON.stringify(diff).replace(/[{}"]/gi, "").replaceAll(",", ", ").replaceAll(":", ": ")}"\`\`\``,
+            content: `\`\`\`yml\nenv: ${secrets.environment}\nclient: ${Math.abs(interaction.createdTimestamp - start.getTime())}ms\ndb 100 recs: ${(dbEnd - dbStart).toFixed(3)}ms\nuptime: "${JSON.stringify(diff).replace(/[{}"]/gi, "").replaceAll(",", ", ").replaceAll(":", ": ")}"\`\`\``,
         });
     },
 } as SlashCommandObject;

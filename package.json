@@ -2,7 +2,7 @@
     "name": "tomochan",
     "module": "src/index.ts",
     "type": "module",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "scripts": {
         "dev": "NODE_ENV=development bun --watch .",
         "start": "NODE_ENV=production bun ./src/index.ts",

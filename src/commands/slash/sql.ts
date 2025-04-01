@@ -24,8 +24,7 @@ export default {
 
             interaction.reply({
                 embeds: [successEmbed.setDescription(`Executed command: \`${command}\``)],
-                content: `\`\`\`ts
-                ${JSON.stringify(result).slice(0, 1950)}\`\`\``,
+                content: `\`\`\`ts\n${JSON.stringify(result).slice(0, 1950)}\`\`\``,
             });
             return;
         } catch (e) {
