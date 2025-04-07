@@ -10,7 +10,11 @@ this is (so far) the best thing i've built
 
 these sections are usually *boooooooring* 🥱
 
-just use `bun dev` for developing and `docker compose up -d` when hosting, don't forget about copying `.env.example` to `.env`, filling it out and you're ready to go 🚀
+just use `bun dev` for developing and `docker compose up -d` when hosting
+
+for env I personally use [doppler](https://www.doppler.com/) but copying `.env.example` to `.env` is easier
+
+fill out those secrets, tweak docker things and you're ready to go 🚀
 
 ## contributing
 

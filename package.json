@@ -2,7 +2,7 @@
     "name": "tomochan",
     "module": "src/index.ts",
     "type": "module",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "scripts": {
         "dev": "NODE_ENV=development bun --watch .",
         "start": "NODE_ENV=production bun ./src/index.ts",
@@ -10,7 +10,7 @@
         "docker:up": "docker compose up -d",
         "docker:down": "docker compose down",
         "docker:build": "docker compose build",
-        "docker:rebuild": "docker compose down tomochan && docker compose build tomochan && docker compose up -d tomochan",
+        "docker:rebuild": "docker compose down bot && docker compose build bot && docker compose up -d bot",
         "lint": "bunx @biomejs/biome lint --write --unsafe --error-on-warnings --config-path=biome.cli.json ./src/",
         "format": "bunx @biomejs/biome format --write --config-path=biome.cli.json ./src/"
     },

@@ -54,16 +54,33 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-  watchtower:
+# triggers deployment via watchtower
+
+#   watchtower:
+#     runs-on: ubuntu-latest
+#     needs: docker
+#     steps:
+#       - name: Trigger watchtower
+#         uses: fjogeleit/http-request-action@v1
+#         with:
+#           url: '${{secrets.ENDPOINT}}/v1/update'
+#           method: 'GET'
+#           customHeaders: '{"Authorization": "Bearer ${{secrets.WATCHTOWER_TOKEN}}"}'
+#           ignoreSsl: true
+#           preventFailureOnNoResponse: "true"
+#           timeout: 90000
+
+# triggers deployment via portainer webhook
+
+  portainer:
     runs-on: ubuntu-latest
     needs: docker
     steps:
-      - name: Trigger watchtower
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'http://${{secrets.ENDPOINT}}/v1/update'
-          method: 'GET'
-          customHeaders: '{"Authorization": "Bearer ${{secrets.WATCHTOWER_TOKEN}}"}'
-          ignoreSsl: true
-          preventFailureOnNoResponse: "true"
-          timeout: 90000
+        - name: Trigger Portainer webhook
+          uses: fjogeleit/http-request-action@v1
+          with:
+            url: '${{secrets.ENDPOINT}}'
+            method: 'POST'
+            ignoreSsl: true
+            preventFailureOnNoResponse: "true"
+            timeout: 90000

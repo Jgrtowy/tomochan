@@ -1,3 +1,5 @@
+import { logger } from "./lib/log";
+
 interface Secrets {
     environment: "production" | "development" | string;
     discordToken: string;
@@ -23,7 +25,9 @@ const secrets = {
 const missingVars = Object.entries(secrets).filter(([_key, value]) => !value);
 
 if (missingVars.length > 0 && !(secrets.environment === "development" && missingVars.length === 1 && missingVars[0][0] === "databaseUrl") && !(secrets.environment === "production" && missingVars.length === 1 && missingVars[0][0] === "devDatabaseUrl")) {
-    console.error("Missing environment variables:", missingVars.map(([key]) => key).join(", "));
+    logger()
+        .namespace("secrets.ts")
+        .error("Missing environment variables:", missingVars.map(([key]) => key).join(", "));
 }
 
 export default secrets;
