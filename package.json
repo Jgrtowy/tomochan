@@ -2,11 +2,11 @@
     "name": "tomochan",
     "module": "src/index.ts",
     "type": "module",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "scripts": {
         "dev": "NODE_ENV=development doppler run -- bun --watch src/index.ts",
         "start": "NODE_ENV=production doppler run -- bun src/index.ts",
-        "db:push": "bunx --bun drizzle-kit --config=drizzle.config.ts push",
+        "db:push": "doppler run -- bunx --bun drizzle-kit --config=drizzle.config.ts push",
         "docker:up": "docker compose up -d",
         "docker:down": "docker compose down",
         "docker:build": "docker compose build",

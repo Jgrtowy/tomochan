@@ -1,5 +1,4 @@
 import adze, { setup } from "adze";
-import secrets from "~/secrets";
 
 setup({
     activeLevel: process.env.NODE_ENV === "production" ? "info" : "debug",

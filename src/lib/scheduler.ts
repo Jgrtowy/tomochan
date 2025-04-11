@@ -1,6 +1,6 @@
 import { CronJob, validateCronExpression } from "cron";
 import { ActivityType } from "discord.js";
-import { arrayContains, count, eq, notInArray, sql } from "drizzle-orm";
+import { and, arrayContains, count, eq, notInArray, sql } from "drizzle-orm";
 import { namesSchema, usedSchema } from "~/db/schema";
 import { client, db, guilds } from "~/index";
 import { guildsList } from "~/lib/allowed";
@@ -10,7 +10,7 @@ import { logger } from "./log";
 const log = logger().namespace("scheduler.ts").seal();
 let jobsEnabled = true;
 
-export const checkForSpecialDate = async () => {
+export const checkForSpecialDate = async (scheduled: boolean | undefined = false) => {
     const today = new Date();
     const dateString = `${today.getDate().toString().padStart(2, "0")}/${(today.getMonth() + 1).toString().padStart(2, "0")}`;
     const todayName = await db
@@ -24,7 +24,7 @@ export const checkForSpecialDate = async () => {
         changeNickname(true, { id: todayName[0].id, name: todayName[0].name });
         return;
     }
-    changeNickname(true);
+    changeNickname(scheduled);
     jobsEnabled = true;
     return;
 };
@@ -32,6 +32,15 @@ export const checkForSpecialDate = async () => {
 export function scheduleJob() {
     const interval = "0 */15 * * * *";
     log.info(`Scheduling jobs with interval ${validateCronExpression(interval) ? "valid" : "invalid"}: ${interval}`);
+    new CronJob(
+        "0 0 0 * * *",
+        async () => {
+            checkForSpecialDate(true);
+        },
+        null,
+        true,
+        "Europe/Warsaw",
+    );
     new CronJob(
         interval,
         () => {
@@ -45,15 +54,6 @@ export function scheduleJob() {
         interval,
         () => {
             jobsEnabled && setPresence();
-        },
-        null,
-        true,
-        "Europe/Warsaw",
-    );
-    new CronJob(
-        "0 0 1 * *",
-        async () => {
-            checkForSpecialDate();
         },
         null,
         true,
@@ -96,7 +96,7 @@ export async function changeNickname(change: boolean | undefined = true, desired
         await db
             .select()
             .from(namesSchema)
-            .where(used.length ? notInArray(namesSchema.id, used) : sql`1=1`)
+            .where(and(used.length ? notInArray(namesSchema.id, used) : sql`1=1`, eq(namesSchema.isExcluded, false)))
             .orderBy(sql`RANDOM()`)
             .limit(1)
     )[0] as { id: number; name: string };

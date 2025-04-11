@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { date, foreignKey, integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, varchar } from "drizzle-orm/pg-core";
 
 export const namesSchema = pgTable("names", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -9,6 +9,7 @@ export const namesSchema = pgTable("names", {
     rowNumber: integer(),
     specialDates: varchar({ length: 255 }).array().default(sql`ARRAY[]::text[]`),
     specialDateType: varchar({ length: 255 }).default(sql`null`),
+    isExcluded: boolean().default(false),
 });
 
 export const guildsSchema = pgTable("guilds", {

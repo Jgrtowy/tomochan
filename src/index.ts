@@ -1,4 +1,3 @@
-import adze from "adze";
 import { Client, Events, GatewayIntentBits, type Guild, IntentsBitField, Partials } from "discord.js";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { autocomplete, executeCommand, registerCommands } from "~/commands";
