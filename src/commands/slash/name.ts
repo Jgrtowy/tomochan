@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { CommandScope, type SlashCommandObject } from "~/commands/types";
 import { namesSchema } from "~/db/schema";
 import { db } from "~/index";
+import { modCommand } from "~/lib/allowed";
 import { successEmbed } from "~/lib/embeds";
 import { changeNickname } from "~/lib/scheduler";
 
@@ -24,6 +25,7 @@ export default {
     run: async (interaction) => {
         const id = (<CommandInteractionOptionResolver>interaction.options).getInteger("id");
         if (!id) return;
+        if (!modCommand(interaction)) return;
 
         const name = await db.select().from(namesSchema).where(eq(namesSchema.rowNumber, id));
 

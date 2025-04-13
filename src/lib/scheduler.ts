@@ -1,5 +1,5 @@
 import { CronJob, validateCronExpression } from "cron";
-import { ActivityType } from "discord.js";
+import { ActivityType, type Client, type ClientApplication } from "discord.js";
 import { and, arrayContains, count, eq, notInArray, sql } from "drizzle-orm";
 import { namesSchema, usedSchema } from "~/db/schema";
 import { client, db, guilds } from "~/index";
@@ -140,5 +140,12 @@ export async function setPresence() {
             },
         ],
         status: secrets.environment !== "production" ? "dnd" : "online",
+    });
+}
+
+export async function setDescription(application: ClientApplication) {
+    if (!application) return;
+    await client.application?.edit({
+        description: `Running tomochan v${secrets.version} | ${secrets.environment !== "production" ? "Development" : "Production"} | ${guildsList.length} guilds`,
     });
 }

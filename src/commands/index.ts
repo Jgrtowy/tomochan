@@ -1,5 +1,5 @@
 import { type AutocompleteInteraction, type ChatInputCommandInteraction, type ClientUser, type ContextMenuCommandInteraction, REST, type RESTPostAPIChatInputApplicationCommandsJSONBody, type RESTPostAPIContextMenuApplicationCommandsJSONBody, Routes } from "discord.js";
-import commandObjects from "~/commands/list";
+import commandObjects from "~/commands/commands";
 import { guilds } from "~/index";
 import { guildsList } from "~/lib/allowed";
 import { errorEmbed } from "~/lib/embeds";
@@ -42,7 +42,7 @@ export async function executeCommand(interaction: ChatInputCommandInteraction | 
     const command = commands.get(interaction.commandName);
     if (!command) return;
     if (!interaction.guild) return;
-    if (interaction.guildId !== secrets.testGuild && !checkGuild(interaction)) return;
+    if (interaction.guildId !== secrets.testGuild && !(await checkGuild(interaction))) return;
 
     try {
         await command.run(<ChatInputCommandInteraction & ContextMenuCommandInteraction>interaction);
@@ -65,12 +65,12 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     }
 }
 
-function checkGuild(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction) {
+async function checkGuild(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction) {
     for (const guild of guildsList) {
         if (guild.guildId === interaction.guildId) return true;
     }
 
-    interaction.reply({
+    await interaction.reply({
         embeds: [errorEmbed.setDescription("This guild is not allowed to use the bot.")],
     });
 

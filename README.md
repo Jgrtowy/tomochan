@@ -12,7 +12,7 @@ these sections are usually *boooooooring* 🥱
 
 just use `bun dev` for developing and `docker compose up -d` when hosting
 
-for env I personally use [doppler](https://www.doppler.com/) but copying `.env.example` to `.env` is easier
+for env I personally use [doppler](https://www.doppler.com/) but copying `.env.example` to `.env` is easier and will work
 
 fill out those secrets, tweak docker things and you're ready to go 🚀
 

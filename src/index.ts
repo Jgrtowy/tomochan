@@ -2,16 +2,15 @@ import { Client, Events, GatewayIntentBits, type Guild, IntentsBitField, Partial
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { autocomplete, executeCommand, registerCommands } from "~/commands";
 import { guildsList, modsList, pullAllowed } from "~/lib/allowed";
-import { checkForSpecialDate, scheduleJob, setPresence } from "~/lib/scheduler";
+import { checkForSpecialDate, scheduleJob as scheduleJobs, setDescription, setPresence } from "~/lib/scheduler";
 import secrets from "~/secrets";
-import { version } from "../package.json";
 import { logger } from "./lib/log";
 import { sendDeployNotification } from "./lib/notifications";
 
 export const botStart = new Date();
 
 const log = logger().namespace("index.ts").seal();
-log.timestamp.info(`🤖 TomoChan's starting! ${secrets.environment === "production" ? "Production" : "Development"} | v${version}`);
+log.timestamp.info(`🤖 TomoChan's starting! ${secrets.environment === "production" ? "Production" : "Development"} | v${secrets.version}`);
 export let db: NodePgDatabase;
 
 try {
@@ -49,10 +48,10 @@ client.once(Events.ClientReady, async (client) => {
     }
 
     log.info("Registering commands...");
-    registerCommands(client.user);
+    await registerCommands(client.user);
     await pullAllowed();
-    scheduleJob();
-    checkForSpecialDate();
+    await checkForSpecialDate();
+    scheduleJobs();
 
     log.info("Allowed guilds:", guildsList.map((guild) => guild.guildName).join(", "));
     log.info("Allowed mods:", modsList.map((mod) => mod.displayName).join(", "));
@@ -62,9 +61,10 @@ client.once(Events.ClientReady, async (client) => {
         if (interaction.isAutocomplete()) return autocomplete(interaction);
     });
 
-    setPresence();
+    await setPresence();
+    await setDescription(client.application);
     if (secrets.environment === "production") sendDeployNotification(client);
-    log.success(`🚀 Started in ${((new Date().getTime() - botStart.getTime()) / 1000).toFixed(3)} seconds.`);
+    log.success(`🚀 Ready in ${((new Date().getTime() - botStart.getTime()) / 1000).toFixed(3)} seconds.`);
 });
 
 client.login(secrets.discordToken);

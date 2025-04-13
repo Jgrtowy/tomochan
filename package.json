@@ -2,7 +2,7 @@
     "name": "tomochan",
     "module": "src/index.ts",
     "type": "module",
-    "version": "1.2.2",
+    "version": "2.0.0",
     "scripts": {
         "dev": "NODE_ENV=development doppler run -- bun --watch src/index.ts",
         "start": "NODE_ENV=production doppler run -- bun src/index.ts",
@@ -12,7 +12,8 @@
         "docker:build": "docker compose build",
         "docker:rebuild": "docker compose down bot && docker compose build bot && docker compose up -d bot",
         "lint": "bunx @biomejs/biome lint --write --unsafe --error-on-warnings --config-path=biome.cli.json ./src/",
-        "format": "bunx @biomejs/biome format --write --config-path=biome.cli.json ./src/"
+        "format": "bunx @biomejs/biome format --write --config-path=biome.cli.json ./src/",
+        "benchmark": "COMPOSE_PROJECT_NAME=tomochan hyperfine --warmup 1 --prepare 'docker rmi -f tomochan_bot || true && docker builder prune -af > /dev/null' 'docker compose build --no-cache bot'"
     },
     "devDependencies": {
         "@types/bun": "latest",
@@ -24,6 +25,7 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "@dopplerhq/node-sdk": "^1.3.0",
         "adze": "^2.2.1",
         "cron": "^4.1.0",
         "datetime-difference": "^1.0.2",

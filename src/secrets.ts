@@ -1,4 +1,26 @@
+import DopplerSDK from "@dopplerhq/node-sdk";
+import { version } from "../package.json";
 import { logger } from "./lib/log";
+
+const fetched = new Map<string, string>();
+if (process.env.DOPPLER_TOKEN) {
+    const doppler = new DopplerSDK({ accessToken: process.env.DOPPLER_TOKEN });
+
+    const dopplerRes = (await doppler.secrets.list("tomochan", process.env.DOPPLER_TOKEN?.split(".")[2] ?? "")) as {
+        secrets: {
+            [key: string]: {
+                raw: string;
+                [key: string]: unknown;
+            };
+        };
+    };
+
+    for (const [key, value] of Object.entries(dopplerRes.secrets)) {
+        if (value && typeof value === "object" && "raw" in value) {
+            fetched.set(key, value.raw as string);
+        }
+    }
+}
 
 interface Secrets {
     environment: "production" | "development" | string;
@@ -9,17 +31,19 @@ interface Secrets {
     databaseUrl: string;
     devDatabaseUrl: string;
     notificationsChannel: string;
+    version: string;
 }
 
 const secrets = {
     environment: process.env.NODE_ENV ?? "production",
-    discordToken: process.env.DISCORD_TOKEN ?? "",
-    tomoId: process.env.TOMO_ID ?? "",
-    ownerId: process.env.OWNER_ID ?? "",
-    testGuild: process.env.TEST_GUILD ?? "",
-    databaseUrl: process.env.DATABASE_URL ?? "",
-    devDatabaseUrl: process.env.DEV_DATABASE_URL ?? "",
-    notificationsChannel: process.env.NOTIFICATIONS_CHANNEL_ID ?? "",
+    discordToken: fetched.get("DISCORD_TOKEN") ?? process.env.DISCORD_TOKEN ?? "",
+    tomoId: fetched.get("TOMO_ID") ?? process.env.TOMO_ID ?? "",
+    ownerId: fetched.get("OWNER_ID") ?? process.env.OWNER_ID ?? "",
+    testGuild: fetched.get("TEST_GUILD") ?? process.env.TEST_GUILD ?? "",
+    databaseUrl: fetched.get("DATABASE_URL") ?? process.env.DATABASE_URL ?? "",
+    devDatabaseUrl: fetched.get("DEV_DATABASE_URL") ?? process.env.DEV_DATABASE_URL ?? "",
+    notificationsChannel: fetched.get("NOTIFICATIONS_CHANNEL_ID") ?? process.env.NOTIFICATIONS_CHANNEL_ID ?? "",
+    version: process.env.npm_package_version ?? version ?? "",
 } satisfies Secrets;
 
 const missingVars = Object.entries(secrets).filter(([_key, value]) => !value);
